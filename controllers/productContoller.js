@@ -97,5 +97,72 @@ exports.searchProducts = async (req, res) => {
 
 // 4. Create Cart
 exports.createCart = async (req, res) => {
-  res.send('cart');
+  try {
+    const { user_id, product_id } = req.body;
+    const user = await knex('carts').insert({
+      user_id: user_id,
+      product_id: product_id,
+    });
+    res.send({ user }); // return user
+  } catch (err) {
+    res.status(400).json({ msg: err.message });
+  }
+};
+
+// 5. Get Cart Items
+exports.getCart = async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    const cart = await knex
+      .select(
+        'products.id',
+        'products.title',
+        'products.price',
+        knex.raw('count(*) as count')
+      )
+      .from('carts')
+      .join('products', 'carts.product_id', '=', 'products.id')
+      .where('carts.user_id', '=', user_id)
+      .groupBy('products.id', 'products.title', 'products.price');
+
+    res.json({ cart });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ msg: err.message });
+  }
+};
+
+// 6. Checkout Logic
+exports.getCheckout = async (req, res) => {
+  try {
+    const { user_id, product_id, count, total } = req.body;
+
+    const items = await knex('tejahang_business').insert({
+      user_id: user_id,
+      product_id: product_id,
+      count: count,
+      total: total,
+    });
+
+    await knex('carts').where('user_id', '=', user_id).del();
+
+    res.json({ items });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ msg: err.message });
+  }
+};
+
+// 7. Business Transaction
+exports.getTransactionList = async (req, res) => {
+  try {
+    const transaction = await knex('tejahang_business').select('*');
+
+    console.log(transaction);
+
+    res.json({ transaction });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ msg: err.message });
+  }
 };

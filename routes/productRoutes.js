@@ -18,6 +18,12 @@ router.route('/categories').get(productController.getCategories); // get list of
 
 router.route('/cart').post(requireAuth, productController.createCart); // create a cart and checkout
 
+router.route('/getCart').post(productController.getCart); // create a cart and checkout
+
+router.route('/checkout').post(productController.getCheckout); // create a cart and checkout
+
+router.route('/transactionList').get(productController.getTransactionList); // create a cart and checkout
+
 router.route('/search').post(productController.searchProducts); // create a cart and checkout
 
 module.exports = router; // imported into app.js
